@@ -20,7 +20,7 @@
 
 <!-- Open Graph (Facebook, LinkedIn, WhatsApp) -->
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://www.unilever.com.mx/careers/">
+<meta property="og:url" content="https://proyectocomunicacion.fwh.is">
 <meta property="og:title" content="Bolsa de Trabajo Unilever | Vacantes y Empleos 2026">
 <meta property="og:description" content="Encuentra las mejores vacantes en Unilever México. Explora oportunidades de empleo en marketing, logística, ventas, finanzas y más. ¡Postúlate hoy!">
 <meta property="og:image" content="/img/favicon.ico">
@@ -404,6 +404,9 @@
           <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Exportar CSV
         </button>
+        <button class="btn-export" id="btnActualizar" >
+         <i class="bi bi-arrow-clockwise"></i>
+        </button>
       </div>
     </div>
 
@@ -518,12 +521,67 @@
 
 <script src="app.js"></script>
 <script>
+  const url = "obtener_solicitudes.php";
+
+  // Mapea los datos del backend al formato de SOLICITUDES que usa app.js
+  async function rellenarTabla() {
+    let respuesta;
+    try {
+      respuesta = await fetch(url);
+    } catch (e) {
+      Swal.fire({ title: 'Error de conexión', text: 'No se pudo conectar con el servidor.', icon: 'error' });
+      return;
+    }
+
+    let datos = await respuesta.json();
+
+    if (!datos.ok) {
+      Swal.fire({ title: 'Error al actualizar', text: 'No se pudieron obtener los datos más recientes. Intenta de nuevo más tarde.', icon: 'error' });
+      return;
+    }
+
+    // Reemplazar el array global SOLICITUDES con los datos reales del backend
+    SOLICITUDES = datos.data.map(el => ({
+      id:               el.id_aspirante,
+      nombres:          el.nombres,
+      apellidos:        el.apellidos,
+      correo:           el.correo,
+      telefono:         el.telefono,
+      ciudad:           '—',
+      fecha_nacimiento: el.fecha_nacimiento,
+      curp:             '—',
+      genero:           '—',
+      estado_civil:     '—',
+      nivel:            '—',
+      institucion:      '—',
+      carrera:          '—',
+      anio:             '—',
+      exp_anios:        '—',
+      ultimo_puesto:    '—',
+      empresa:          '—',
+      disponibilidad:   '—',
+      descripcion:      '—',
+      puesto_vacante:   el.nombre_puesto,
+      vacante_id:       null,
+      estado:           'Pendiente',
+      fecha_solicitud:  el.fecha_nacimiento, // usar fecha disponible
+    }));
+
+    // Usar la infraestructura existente de app.js para renderizar
+    renderAdmin();
+  }
+
+  // Cargar datos reales al iniciar la página
+  document.addEventListener('DOMContentLoaded', function() {
+    rellenarTabla();
+  });
+
+  $("#btnActualizar").on("click", function() {
+    rellenarTabla();
+  });
+
   $("#btnExportarAcsv").on("click", function() {
-    Swal.fire({
-      title: 'Exportar a CSV',
-      text: 'Exportar a CSV — disponible con backend PHP',
-      icon: 'info',
-          })
+    Swal.fire({ title: 'Exportar a CSV', text: 'Exportar a CSV — disponible con backend PHP', icon: 'info' });
   });
 </script>
 </body>
